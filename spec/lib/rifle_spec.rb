@@ -19,11 +19,9 @@ describe Rifle do
 
     Rifle.process_resource("test:1", {comment: "A great venue for cheese."})
     Rifle.process_resource("test:2", {comment: "I like chocolate cake", place: "My favourite restaurant"})
-    Rifle.process_resource("test:4", {comment: "A metaphone for chocolate is XKLT."})
+    Rifle.process_resource("test:4", {comment: "A metaphone for the above flavour is XKLT."})
 
-
-
-    Rifle.search("chocolate").should == Set.new(["test:2", "test:3", "test:4"])
+    Rifle.search("chocolate").should == Set.new(["test:2", "test:3"])
     Rifle.search("kitchen").should == Set.new(["test:3"])
     Rifle.search("cheese").should == Set.new(["test:1"])
   end
