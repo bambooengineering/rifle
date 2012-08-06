@@ -1,4 +1,3 @@
-require 'rifle/version'
 require 'set'
 require 'redis'
 require 'text'
