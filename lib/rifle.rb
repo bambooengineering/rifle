@@ -3,15 +3,24 @@ require 'redis'
 require 'text'
 
 module Rifle
-  @@ignore_words = ["the", "of", "to", "and", "a", "in", "is", "it", "you", "that"]
-  @@redis = Redis.new
 
-  def self.ignore_words
-    @@ignore_words
+  class Settings
+    attr_accessor :ignored_words, :min_word_length, :redis
+    def ignored_words
+      @ignored_words ||= ["the", "and", "you", "that"]
+    end
+    def min_word_length
+      @min_word_length ||= 3
+    end
+    def redis
+      @redis ||= Redis.new
+    end
   end
 
-  def self.redis
-    @@redis
+  @@settings = Settings.new
+
+  def self.settings
+    @@settings
   end
 
   def self.process_resource(urn, hash)
@@ -30,10 +39,10 @@ module Rifle
       words = Set.new
       traverse_sentences(hash, words)
       metaphones = get_metaphones(words)
-      p metaphones
       metaphones.each do |metaphone|
         save_processed(urn, metaphone)
       end
+      metaphones
     end
 
     def search_for(sentence)
@@ -46,6 +55,8 @@ module Rifle
       end
       urns
     end
+
+    private
 
     def traverse_sentences(input, words)
       input.each do |key, value|
@@ -67,8 +78,8 @@ module Rifle
 
     def get_words_from_text(text)
       return [] if !text.is_a?(String)
-      words = text.split(/[^a-zA-Z]/)
-      return words - Rifle.ignore_words
+      words = text.downcase.split(/[^a-zA-Z]/).select{|w| w.length >= Rifle.settings.min_word_length}
+      return words - Rifle.settings.ignored_words
     end
 
     def get_metaphones(words)
@@ -76,11 +87,11 @@ module Rifle
     end
 
     def save_processed(urn, metaphone)
-      Rifle.redis.sadd("rifle:#{metaphone}", urn)
+      Rifle.settings.redis.sadd("rifle:#{metaphone}", urn)
     end
 
     def get_urns_for_metaphone(metaphone)
-      Rifle.redis.smembers("rifle:#{metaphone}")
+      Rifle.settings.redis.smembers("rifle:#{metaphone}")
     end
 
   end
