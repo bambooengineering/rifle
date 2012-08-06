@@ -30,7 +30,6 @@ module Rifle
       words = Set.new
       traverse_sentences(hash, words)
       metaphones = get_metaphones(words)
-      p metaphones
       metaphones.each do |metaphone|
         save_processed(urn, metaphone)
       end
@@ -63,12 +62,7 @@ module Rifle
     end
 
     def get_metaphones(words)
-      metaphones = Set.new
-      words.each do |word|
-        m = ::Text::Metaphone.metaphone(word)
-        metaphones.add(m)
-      end
-      return metaphones
+      ::Text::Metaphone.metaphone(words.to_a.join(' ')).split(' ')
     end
 
     def save_processed(urn, metaphone)
