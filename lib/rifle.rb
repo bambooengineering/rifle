@@ -9,6 +9,7 @@ module Rifle
   def self.ignore_words
     @@ignore_words
   end
+
   def self.redis
     @@redis
   end
@@ -29,6 +30,7 @@ module Rifle
       words = Set.new
       traverse_sentences(hash, words)
       metaphones = get_metaphones(words)
+      p metaphones
       metaphones.each do |metaphone|
         save_processed(urn, metaphone)
       end
@@ -47,15 +49,24 @@ module Rifle
 
     def traverse_sentences(input, words)
       input.each do |key, value|
-        if value.is_a? Hash
-          traverse_sentences(value, words)
-        else
-          words.add(get_words_from_text(value))
+        examine_value(value, words)
+      end
+    end
+
+    def examine_value(value, words)
+      if value.is_a? Hash
+        traverse_sentences(value, words)
+      elsif value.is_a? Array
+        value.each do |a|
+          examine_value(a, words)
         end
+      else
+        words.add(get_words_from_text(value))
       end
     end
 
     def get_words_from_text(text)
+      return [] if !text.is_a?(String)
       words = text.split(/[^a-zA-Z]/)
       return words - Rifle.ignore_words
     end
