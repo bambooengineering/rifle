@@ -17,11 +17,30 @@ module Rifle
   class Processor
 
     def index_resource(urn, hash)
-      words = traverse_object(hash, words)
-      metaphones = get_metaphones(words)
-      metaphones.each do |metaphone|
-        save_processed(urn, metaphone)
+      # First get the old values
+      old_payload = get_payload_for_urn(urn)
+      if old_payload
+        old_words = traverse_object(old_payload)
+        old_metaphones = get_metaphones(old_words)
+      else
+        old_metaphones = []
       end
+
+      # Now get the new ones
+      words = traverse_object(hash)
+      metaphones = get_metaphones(words)
+
+      # Clear out words that have been removed
+      (old_metaphones - metaphones).each do |metaphone|
+        remove_urn_from_metaphone_set(urn, metaphone)
+      end
+
+      # And add the new ones
+      (metaphones - old_metaphones).each do |metaphone|
+        add_urn_to_metaphone_set(urn, metaphone)
+      end
+
+      # Save the entire payload for future reference
       save_payload(urn, hash)
       metaphones
     end
@@ -48,7 +67,11 @@ module Rifle
 
     private
 
-    def traverse_object(input, words)
+    def remove_old(urn)
+
+    end
+
+    def traverse_object(input, words = nil)
       words ||= Set.new
       examine_value(input, words)
       words
@@ -78,8 +101,12 @@ module Rifle
       ::Text::Metaphone.metaphone(words.to_a.join(' ')).split(' ')
     end
 
-    def save_processed(urn, metaphone)
+    def add_urn_to_metaphone_set(urn, metaphone)
       Rifle.settings.redis.sadd("rifle:m:#{metaphone}", urn)
+    end
+
+    def remove_urn_from_metaphone_set(urn, metaphone)
+      Rifle.settings.redis.srem("rifle:m:#{metaphone}", urn)
     end
 
     def save_payload(urn, hash)
@@ -91,7 +118,8 @@ module Rifle
     end
 
     def get_payload_for_urn(urn)
-      JSON.parse(Rifle.settings.redis.get("rifle:u:#{urn}"))
+      payload = Rifle.settings.redis.get("rifle:u:#{urn}")
+      payload.nil? ? nil : JSON.parse(payload)
     end
 
   end

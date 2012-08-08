@@ -39,6 +39,15 @@ describe Rifle do
     Rifle.search("METAphone", true).should == Set.new(["test:4"])
     Rifle.search("wensleydale", true).should == Set.new(["test:5"]) # Search for array containers
 
+    # Test that it can return the entire payload
     Rifle.search("cheese").to_json.should == [result1].to_json
+
+    # Test that replacing a payload removes old keys
+    Rifle.store("test:5", ['red leicster', 'lancashire', 'stichelton'])
+    Rifle.search("wensleydale", true).should == Set.new()
+    Rifle.search("cheddar", true).should == Set.new()
+    Rifle.search("lancashire", true).should == Set.new(["test:5"])
+    Rifle.search("red leicster", true).should == Set.new(["test:5"])
+    Rifle.search("stichelton", true).should == Set.new(["test:5"])
   end
 end
