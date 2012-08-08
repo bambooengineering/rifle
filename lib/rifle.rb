@@ -1,3 +1,4 @@
+require 'json'
 require 'set'
 require 'redis'
 require 'text'
@@ -6,12 +7,15 @@ module Rifle
 
   class Settings
     attr_accessor :ignored_words, :min_word_length, :redis
+
     def ignored_words
       @ignored_words ||= ["the", "and", "you", "that"]
     end
+
     def min_word_length
       @min_word_length ||= 3
     end
+
     def redis
       @redis ||= Redis.new
     end
@@ -23,14 +27,12 @@ module Rifle
     @@settings
   end
 
-  def self.process_resource(urn, hash)
-    p = Processor.new
-    p.index_resource(urn, hash)
+  def self.store(urn, hash)
+    Processor.new.index_resource(urn, hash)
   end
 
-  def self.search(words)
-    p = Processor.new
-    p.search_for(words)
+  def self.search(words, urns_only = false)
+    Processor.new.search_for(words, urns_only)
   end
 
   class Processor
@@ -42,18 +44,28 @@ module Rifle
       metaphones.each do |metaphone|
         save_processed(urn, metaphone)
       end
+      save_payload(urn, hash)
       metaphones
     end
 
-    def search_for(sentence)
+    def search_for(sentence, urns_only)
       words = get_words_from_text(sentence)
       metaphones = get_metaphones(words)
       urns = Set.new
       metaphones.each do |metaphone|
         new_urns = get_urns_for_metaphone(metaphone)
-        urns =urns.merge(new_urns)
+        urns = urns.merge(new_urns)
       end
-      urns
+      if urns_only
+        urns
+      else
+        urns.map { |u|
+          {
+              urn: u,
+              payload: get_payload_for_urn(u)
+          }
+        }
+      end
     end
 
     private
@@ -78,7 +90,7 @@ module Rifle
 
     def get_words_from_text(text)
       return [] if !text.is_a?(String)
-      words = text.downcase.split(/[^a-zA-Z]/).select{|w| w.length >= Rifle.settings.min_word_length}
+      words = text.downcase.split(/[^a-zA-Z]/).select { |w| w.length >= Rifle.settings.min_word_length }
       return words - Rifle.settings.ignored_words
     end
 
@@ -87,11 +99,19 @@ module Rifle
     end
 
     def save_processed(urn, metaphone)
-      Rifle.settings.redis.sadd("rifle:#{metaphone}", urn)
+      Rifle.settings.redis.sadd("rifle:m:#{metaphone}", urn)
+    end
+
+    def save_payload(urn, hash)
+      Rifle.settings.redis.set("rifle:u:#{urn}", hash.to_json)
     end
 
     def get_urns_for_metaphone(metaphone)
-      Rifle.settings.redis.smembers("rifle:#{metaphone}")
+      Rifle.settings.redis.smembers("rifle:m:#{metaphone}")
+    end
+
+    def get_payload_for_urn(urn)
+      JSON.parse(Rifle.settings.redis.get("rifle:u:#{urn}"))
     end
 
   end
