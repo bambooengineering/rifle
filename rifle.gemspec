@@ -18,4 +18,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'rails'
   s.add_dependency 'redis'
   s.add_dependency 'text'
+  s.add_dependency 'resque'
+  s.add_dependency 'rest-client'
 end

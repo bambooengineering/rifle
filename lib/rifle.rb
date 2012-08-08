@@ -2,11 +2,12 @@ require 'json'
 require 'set'
 require 'redis'
 require 'text'
+require_relative 'rifle/rifle_resque'
 
 module Rifle
 
   class Settings
-    attr_accessor :ignored_words, :min_word_length, :redis
+    attr_accessor :ignored_words, :min_word_length, :redis, :server
 
     def ignored_words
       @ignored_words ||= ["the", "and", "you", "that"]
@@ -14,6 +15,10 @@ module Rifle
 
     def min_word_length
       @min_word_length ||= 3
+    end
+
+    def server
+      @server ||= 'http://localhost:3000'
     end
 
     def redis
@@ -38,8 +43,7 @@ module Rifle
   class Processor
 
     def index_resource(urn, hash)
-      words = Set.new
-      traverse_sentences(hash, words)
+      words = traverse_object(hash, words)
       metaphones = get_metaphones(words)
       metaphones.each do |metaphone|
         save_processed(urn, metaphone)
@@ -70,15 +74,17 @@ module Rifle
 
     private
 
-    def traverse_sentences(input, words)
-      input.each do |key, value|
-        examine_value(value, words)
-      end
+    def traverse_object(input, words)
+      words ||= Set.new
+      examine_value(input, words)
+      words
     end
 
     def examine_value(value, words)
       if value.is_a? Hash
-        traverse_sentences(value, words)
+        value.each do |k, v|
+          examine_value(v, words)
+        end
       elsif value.is_a? Array
         value.each do |a|
           examine_value(a, words)

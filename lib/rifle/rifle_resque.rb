@@ -1,6 +1,7 @@
 gem 'resque'
+gem 'rest-client'
 
-# This simple resque job pings the search server with a payload
+# This simple resque job pings the search server with a payload.
 
 class RifleResque
   @queue = :rifle
@@ -11,11 +12,11 @@ class RifleResque
   end
 
   def store
-    broker_gateway_service.event({generator: @generator, timestamp: DateTime.now, payload: @payload})
+    RestClient.post("#{Rifle.settings.server}/store/#{@urn}", @payload)
   end
 
   def self.perform(urn, payload)
     h = RifleResque.new(urn, payload)
-    h.execute
+    h.store
   end
 end
