@@ -4,7 +4,7 @@ gem 'rest-client'
 # This simple resque job pings the search server with a payload.
 
 class RifleResque
-  @queue = :rifle
+  @queue = Rifle.settings.resque_queue
 
   def initialize(urn, payload)
     @urn = urn
