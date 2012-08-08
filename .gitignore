@@ -6,3 +6,4 @@ Gemfile.lock
 log
 .jhw-cache
 target
+*.gem
