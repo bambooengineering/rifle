@@ -21,4 +21,6 @@ Gem::Specification.new do |s|
   s.add_dependency 'resque'
   s.add_dependency 'rest-client'
   s.add_dependency 'session_off'
+  s.add_dependency 'fitter-happier'
+  s.add_dependency 'lograge'
 end
