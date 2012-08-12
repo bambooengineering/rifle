@@ -16,7 +16,11 @@ class RifleResque
   end
 
   def store
-    RestClient.post("#{Rifle.settings.server}/store/#{@urn}", @payload, :content_type => :json, :accept => :json)
+    if Rifle.settings.use_rest_server
+      RestClient.post("#{Rifle.settings.use_rest_server}/store/#{@urn}", @payload, :content_type => :json, :accept => :json)
+    else
+      Rifle.store(@urn, JSON.parse(@payload))
+    end
   end
 
   def self.perform(urn, payload)

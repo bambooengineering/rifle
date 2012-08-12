@@ -1,7 +1,7 @@
 module Rifle
 
   class Settings
-    attr_accessor :ignored_words, :min_word_length, :redis, :server, :resque_queue
+    attr_accessor :ignored_words, :min_word_length, :redis, :use_rest_server, :resque_queue
 
     def ignored_words
       @ignored_words ||= ["the", "and", "you", "that"]
@@ -11,16 +11,12 @@ module Rifle
       @min_word_length ||= 3
     end
 
-    def server
-      @server ||= 'http://localhost:3000'
-    end
-
     def resque_queue
       @resque_queue ||= :rifle
     end
 
     def redis
-      @redis ||= Redis.new
+      @redis ||= Redis.current
     end
   end
 

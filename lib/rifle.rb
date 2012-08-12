@@ -4,6 +4,7 @@ require 'redis'
 require 'text'
 require_relative 'rifle/settings'
 require_relative 'rifle/rifle_resque'
+require_relative 'rifle/rifle_client'
 
 module Rifle
   def self.store(urn, hash)
