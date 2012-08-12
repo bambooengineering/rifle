@@ -10,7 +10,9 @@ Just use the gem.
 
     gem 'rifle'
 
-Now, all of your Rails based servers can write to and query the search engine using the following commands
+Now, all of your Rails based servers can write to and query the search engine using the following commands.
+The store method can take a hash, or a json string. The search method returns an array of hashes, each with a
+urn and a payload
 
     Rifle::Client.store('urn:monty:sketch:MP3242', {
         quote: 'I would like to buy a cat license'
@@ -18,12 +20,13 @@ Now, all of your Rails based servers can write to and query the search engine us
 
     Rifle::Client.search('Cat')
 
-    # => {
+    # => [{
     #    urn: 'urn:monty:sketch:MP3242',
     #    payload: {
     #        quote: 'I would like to buy a cat license'
     #    }
-    # }
+    # }]
+
 
 # Payloads
 

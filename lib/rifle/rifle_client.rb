@@ -1,6 +1,9 @@
 module Rifle
   module Client
     def self.store(urn, json)
+      if (json.is_a? Hash)
+        json = json.to_json
+      end
       Resque.enqueue(RifleResque, urn, json)
     end
     def self.search(query)
