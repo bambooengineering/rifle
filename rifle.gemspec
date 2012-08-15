@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.version = Rifle::VERSION
   s.authors = ['Harry Lascelles']
   s.email = ['harry@harrylascelles.com']
-  s.hompage = 'https://github.com/firstbanco/rifle'
+  s.homepage = 'https://github.com/firstbanco/rifle'
   s.summary = 'Redis search server'
 
   s.files = Dir["{app,lib}/**/*"] + ["README.md"]
