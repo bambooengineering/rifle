@@ -66,10 +66,6 @@ module Rifle
       end
     end
 
-    def remove_old(urn)
-
-    end
-
     def traverse_object_for_word_set(input)
       words = Set.new
       examine_value(input, words)

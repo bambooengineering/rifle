@@ -47,10 +47,11 @@ describe Rifle do
     # Test that it can return the entire payload
     Rifle.search("cheese").to_json.should == [result1].to_json
 
-    # Test that replacing a payload removes old keys
+    Rifle.settings.ignored_words << 'cheddar'
+    # Test that replacing a payload removes old keys, including ones in the old payload that are now "ignored"
     Rifle.store("test:5", ['red leicster', 'lancashire', 'stichelton'])
     Rifle.search("wensleydale", true).should == Set.new()
-    Rifle.search("cheddar", true).should == Set.new()
+    Rifle.search("cheddar", true).should == Set.new() # This should have been removed.
     Rifle.search("lancashire", true).should == Set.new(["test:5"])
     Rifle.search("red leicster", true).should == Set.new(["test:5"])
     Rifle.search("stichelton", true).should == Set.new(["test:5"])
