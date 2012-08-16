@@ -1,3 +1,4 @@
+# encoding: UTF-8
 require 'mock_redis'
 
 describe Rifle do
@@ -7,6 +8,10 @@ describe Rifle do
 
   describe "Process and search" do
 
+    processor = Rifle::Processor.new
+    processor.get_words_array_from_text('The £20000 kitchen cake tin... Wonderful!').should == ['the', '20000', 'kitchen', 'cake', 'tin', 'wonderful']
+    processor.get_metaphones_from_word_set(Set.new(['the', '20000', 'kitchen', 'cake', 'tin', 'wonderful'])).should == ["KXN", "KK", "TN", "WNTRFL"]
+
     metaphones = Rifle.store("test:3", {comment: "I think we need more chocolate cake", sources: [{
                                                                                                     id: 1, text: 'In the supermarket'
                                                                                                 }, {
@@ -15,7 +20,7 @@ describe Rifle do
                                                                                                     id: 3, text: 'A plush diner'
                                                                                                 }]})
 
-    metaphones.should == ["0NK", "NT", "MR", "XKLT", "KK", "SPRMRKT", "KXN", "KK", "TN", "PLX", "TNR"]
+    metaphones.should == ["0NK", "NT", "MR", "XKLT", "KK", "SPRMRKT", "KXN", "TN", "PLX", "TNR"]
 
     result1 = {
         urn: "TEST:1",
@@ -50,4 +55,33 @@ describe Rifle do
     Rifle.search("red leicster", true).should == Set.new(["test:5"])
     Rifle.search("stichelton", true).should == Set.new(["test:5"])
   end
+
+
+  describe "Process and search" do
+    # Test Ref codes. If a word is a block of letters and numbers it should not be split
+    Rifle.store("ref:1", {ref: "LAQQWE2ZBR98765E"})
+
+    Rifle.search("LAQQWE2ZBR98765E", true).should == Set.new(["ref:1"])
+    Rifle.search("LA", true).should == Set.new()
+    Rifle.search("ZBR", true).should == Set.new()
+    Rifle.search("LAQQWE", true).should == Set.new()
+    Rifle.search("98765", true).should == Set.new()
+  end
+
+  describe "Punctuation" do
+    # Test splitting on punctuation
+    Rifle.store("ref:2", {ref: "KJ/LAQQWE-2"})
+
+    Rifle.search("LAQQWE", true).should == Set.new(["ref:2"])
+    Rifle.search("KJ/LAQQWE-2", true).should == Set.new(["ref:2"])
+  end
+
+  describe "Numbers" do
+    # Test store numbers
+    Rifle.store("ref:3", {ref: "123467891"})
+
+    Rifle.search("123467891", true).should == Set.new()
+    Rifle.search("12346789", true).should == Set.new()
+  end
+
 end
