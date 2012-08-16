@@ -74,8 +74,8 @@ module Rifle
 
     def examine_value(value, words)
       if value.is_a? Hash
-        value.each do |k, v|
-          examine_value(v, words)
+        (value.keys - Rifle.settings.ignored_keys).each do |k|
+          examine_value(value[k], words)
         end
       elsif value.is_a? Array
         value.each do |a|

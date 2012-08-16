@@ -1,10 +1,14 @@
 module Rifle
 
   class Settings
-    attr_accessor :ignored_words, :min_word_length, :redis, :use_rest_server, :resque_queue
+    attr_accessor :ignored_words, :ignored_keys, :min_word_length, :redis, :use_rest_server, :resque_queue
 
     def ignored_words
       @ignored_words ||= ["the", "and", "you", "that"]
+    end
+
+    def ignored_keys
+      @ignored_keys ||= [:created_at, :updated_at]
     end
 
     def min_word_length

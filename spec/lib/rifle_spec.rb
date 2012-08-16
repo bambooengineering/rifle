@@ -85,4 +85,19 @@ describe Rifle do
     Rifle.search("12346789", true).should == Set.new()
   end
 
+  describe "Ignored keys" do
+    # Test store numbers
+
+    Rifle.settings.ignored_keys << :ignore_me
+    Rifle.store("ref:4", {
+        ignore_me: 'Fish',
+        but_not_me: 'License',
+        created_at: '20th December 2012'
+    })
+
+    Rifle.search("Fish", true).should == Set.new()
+    Rifle.search("License", true).should == Set.new(['ref:4'])
+    Rifle.search("December", true).should == Set.new()
+  end
+
 end
