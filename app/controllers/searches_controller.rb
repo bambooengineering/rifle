@@ -1,5 +1,10 @@
 class SearchesController < ApplicationController
 
+  def flush
+    Rifle.flush
+    render json: {status: 'success'}, status: :ok
+  end
+
   def store
     urn = params[:urn]
     payload = JSON.parse(request.body.read)

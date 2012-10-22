@@ -100,4 +100,13 @@ describe Rifle do
     Rifle.search("December", true).should == Set.new()
   end
 
+  describe "Short names and flush" do
+    # Test store short names
+    Rifle.store("ref:bobby", {name: "Bobby"})
+    Rifle.search("bobby", true).should == Set.new(["ref:bobby"])
+
+    Rifle.flush
+    Rifle.search("bobby", true).should == Set.new()
+  end
+
 end

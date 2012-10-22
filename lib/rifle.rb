@@ -7,6 +7,15 @@ require_relative 'rifle/rifle_resque'
 require_relative 'rifle/rifle_client'
 
 module Rifle
+  def self.flush
+    p "Flushing all Rifle indices..."
+    keys = Rifle.settings.redis.keys("rifle:*")
+    keys.each { |k|
+      Rifle.settings.redis.del(k)
+    }
+    p "Flushing all Rifle indices complete"
+  end
+
   def self.store(urn, hash)
     Processor.new.index_resource(urn, hash)
   end
@@ -18,6 +27,7 @@ module Rifle
   class Processor
 
     def index_resource(urn, hash)
+      p "Rifle indexing object with urn #{urn}"
       # First get the old values
       old_payload = get_payload_for_urn(urn)
       if old_payload
@@ -47,6 +57,7 @@ module Rifle
     end
 
     def search_for(sentence, urns_only)
+      p "Rifle searching for #{sentence}, urns only #{urns_only}"
       words = get_words_array_from_text(sentence)
       metaphones = get_metaphones_from_word_set(Set.new(words))
       urns = Set.new
@@ -54,6 +65,7 @@ module Rifle
         new_urns = get_urns_for_metaphone(metaphone)
         urns = urns.merge(new_urns)
       end
+      p "Rifle found #{urns.size} urns"
       if urns_only
         urns
       else
