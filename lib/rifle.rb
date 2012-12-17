@@ -60,11 +60,14 @@ module Rifle
       p "Rifle searching for #{sentence}, urns only #{urns_only}"
       words = get_words_array_from_text(sentence)
       metaphones = get_metaphones_from_word_set(Set.new(words))
-      urns = Set.new
+
+      urns = nil
       metaphones.each do |metaphone|
         new_urns = get_urns_for_metaphone(metaphone)
-        urns = urns.merge(new_urns)
+        urns = urns.nil? ? Set.new(new_urns) : urns.intersection(new_urns)
       end
+      urns ||= Set.new
+
       p "Rifle found #{urns.size} urns"
       if urns_only
         urns

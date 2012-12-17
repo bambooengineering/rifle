@@ -11,7 +11,7 @@ describe Rifle do
       Rifle.settings.fuzzy_matching = true
     }
 
-    describe "Process and search" do
+    it "Process and search" do
 
       processor = Rifle::Processor.new
       processor.get_words_array_from_text('The £20000 kitchen cake tin... Wonderful!').should == ['the', '20000', 'kitchen', 'cake', 'tin', 'wonderful']
@@ -63,7 +63,7 @@ describe Rifle do
     end
 
 
-    describe "Process and search" do
+    it "Process and search" do
       # Test Ref codes. If a word is a block of letters and numbers it should not be split
       Rifle.store("ref:1", {ref: "LAQQWE2ZBR98765E"})
 
@@ -74,7 +74,7 @@ describe Rifle do
       Rifle.search("98765", true).should == Set.new()
     end
 
-    describe "Punctuation" do
+    it "Punctuation" do
       # Test splitting on punctuation
       Rifle.store("ref:2", {ref: "KJ/LAQQWE-2"})
 
@@ -82,7 +82,7 @@ describe Rifle do
       Rifle.search("KJ/LAQQWE-2", true).should == Set.new(["ref:2"])
     end
 
-    describe "Numbers" do
+    it "Numbers" do
       # Test store numbers
       Rifle.store("ref:3", {ref: "123467891"})
 
@@ -90,7 +90,7 @@ describe Rifle do
       Rifle.search("12346789", true).should == Set.new()
     end
 
-    describe "Ignored keys" do
+    it "Ignored keys" do
       # Test store numbers
 
       Rifle.settings.ignored_keys << :ignore_me
@@ -105,7 +105,7 @@ describe Rifle do
       Rifle.search("December", true).should == Set.new()
     end
 
-    describe "Short names and flush" do
+    it "Short names and flush" do
       # Test store short names
       Rifle.store("ref:bobby", {name: "Bobby"})
       Rifle.search("bobby", true).should == Set.new(["ref:bobby"])
@@ -148,6 +148,7 @@ describe Rifle do
       Rifle.search("kitchen", true).should == Set.new
       Rifle.search("cheese", true).should == Set.new(["TEST:1"])
       Rifle.search("Spain", true).should == Set.new(["test:4"])
+      Rifle.search("Spain Rain Chocolate", true).should == Set.new()
       Rifle.search("SPAIN", true).should == Set.new(["test:4"])
       Rifle.search("Span", true).should == Set.new # Not using metaphones
       Rifle.search("wensleydale", true).should == Set.new(["test:5"]) # Search for array containers
