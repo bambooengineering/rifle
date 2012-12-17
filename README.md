@@ -31,7 +31,7 @@ urn and a payload
 # Payloads
 
 Payloads are expected to be hashes, identified by a company-wide unique id (a urn). These are indexed and can
-be searched by metaphone. That is, the search term need not be exact.
+be searched by metaphone if fuzzy_matching is enabled. That is, the search term need not be exact.
 
 E.g, given the following payload
 
@@ -54,6 +54,7 @@ You can supply a rifle_config.rb initializer with the following options. Default
     Rifle.settings.resque_queue      # = :rifle
     Rifle.settings.redis             # = Redis.current  (used both by the client in "inline mode" and the server in "standalone mode")
     Rifle.settings.use_rest_server   # = nil
+    Rifle.settings.fuzzy_matching    # = false
 
 # Server deployment modes
 
