@@ -1,7 +1,7 @@
 module Rifle
 
   class Settings
-    attr_accessor :ignored_words, :ignored_keys, :min_word_length, :redis, :use_rest_server, :resque_queue
+    attr_accessor :ignored_words, :ignored_keys, :min_word_length, :redis, :use_rest_server, :resque_queue, :fuzzy_matching
 
     def ignored_words
       @ignored_words ||= ["the", "and", "you", "that"]
@@ -9,6 +9,10 @@ module Rifle
 
     def ignored_keys
       @ignored_keys ||= [:created_at, :updated_at]
+    end
+
+    def fuzzy_matching
+      @fuzzy_matching.nil? ? true : @fuzzy_matching
     end
 
     def min_word_length

@@ -111,8 +111,14 @@ module Rifle
       }
       # Removed ignored words
       words.subtract Rifle.settings.ignored_words
-      # Get metaphones
-      ::Text::Metaphone.metaphone(words.to_a.join(' ')).split(' ')
+      # Get the parts
+      if Rifle.settings.fuzzy_matching
+        # Get metaphones
+        ::Text::Metaphone.metaphone(words.to_a.join(' ')).split(' ')
+      else
+        # Get the raw words
+        words.to_a
+      end
     end
 
     def add_urn_to_metaphone_set(urn, metaphone)
