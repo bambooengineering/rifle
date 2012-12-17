@@ -64,6 +64,7 @@ module Rifle
       urns = nil
       metaphones.each do |metaphone|
         new_urns = get_urns_for_metaphone(metaphone)
+        p metaphone
         urns = urns.nil? ? Set.new(new_urns) : urns.intersection(new_urns)
       end
       urns ||= Set.new
@@ -103,15 +104,17 @@ module Rifle
 
     def get_words_array_from_text(text)
       return [] if !text.is_a?(String)
-      words = text.downcase.split(/[^a-zA-Z0-9]/).select { |w| w.length >= Rifle.settings.min_word_length }
-      return words
+      text.downcase.split(/[^a-zA-Z0-9]/).select { |w| w.length >= Rifle.settings.min_word_length }
     end
 
     def get_metaphones_from_word_set(words)
-      # Get just text words (no numbers)
-      words.keep_if { |w|
-        w.to_f == 0
-      }
+      # Add extra search terms. EG, other phone number layouts
+      words = Set.new(words.map { |w|
+        # Here we have to strip all the front zeros and replace with 44.
+        # Weirdly, the +can be ignored, it is not included in Redis keys.
+        w.start_with?('0') ? "44#{w[1..-1]}" : w
+      })
+
       # Removed ignored words
       words.subtract Rifle.settings.ignored_words
       # Get the parts

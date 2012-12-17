@@ -134,6 +134,8 @@ describe Rifle do
       Rifle.store("test:4", {comment: "Rain in spain"})
       # Test the root being an array
       Rifle.store("test:5", ['cheddar', 'stichelton', 'wensleydale'])
+      # Test storing phone numbers
+      Rifle.store("test:6", {number: "+447987654567"})
 
 
       p "Flushing all Rifle indices..."
@@ -164,6 +166,9 @@ describe Rifle do
       Rifle.search("lancashire", true).should == Set.new(["test:5"])
       Rifle.search("red leicster", true).should == Set.new(["test:5"])
       Rifle.search("stichelton", true).should == Set.new(["test:5"])
+
+      Rifle.search("07987654567", true).should == Set.new(["test:6"])
+
     end
 
   end
