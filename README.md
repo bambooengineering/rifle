@@ -44,6 +44,7 @@ Any of the following search terms will match
     RYTE
     Argument
     arguments
+    RYTE  Argument       # => ie, an AND match
 
 # Client configuration
 
