@@ -12,7 +12,7 @@ module Rifle
     end
 
     def fuzzy_matching
-      @fuzzy_matching.nil? ? true : @fuzzy_matching
+      @fuzzy_matching.nil? ? false : @fuzzy_matching
     end
 
     def min_word_length
