@@ -110,9 +110,9 @@ module Rifle
     def get_metaphones_from_word_set(words)
       # Add extra search terms. EG, other phone number layouts
       words = Set.new(words.map { |w|
-        # Here we have to strip all the front zeros and replace with 44.
-        # Weirdly, the +can be ignored, it is not included in Redis keys.
-        w.start_with?('0') ? "44#{w[1..-1]}" : w
+        # Here we have to strip all the front +44 and replace with 0.
+        w = w.start_with?('+44') ? "0#{w[3..-1]}" : w
+        w = w.start_with?('+') ? w[1..-1] : w # Also strip + signs, as they are ignored by Resque in keys
       })
 
       # Removed ignored words
