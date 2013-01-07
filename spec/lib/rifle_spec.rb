@@ -18,18 +18,18 @@ describe Rifle do
       processor.get_metaphones_from_word_set(Set.new(['the', '20000', 'kitchen', 'cake', 'tin', 'wonderful'])).should == ["KXN", "KK", "TN", "WNTRFL"]
 
       metaphones = Rifle.store("test:3", {comment: "I think we need more chocolate cake", sources: [{
-                                                                                                        id: 1, text: 'In the supermarket'
+                                                                                                      id: 1, text: 'In the supermarket'
                                                                                                     }, {
-                                                                                                        id: 2, text: 'The kitchen cake tin'
+                                                                                                      id: 2, text: 'The kitchen cake tin'
                                                                                                     }, {
-                                                                                                        id: 3, text: 'A plush diner'
+                                                                                                      id: 3, text: 'A plush diner'
                                                                                                     }]})
 
       metaphones.should == ["0NK", "NT", "MR", "XKLT", "KK", "SPRMRKT", "KXN", "TN", "PLX", "TNR"]
 
       result1 = {
-          urn: "TEST:1",
-          payload: {comment: "A great venue for cheese."}
+        urn: "TEST:1",
+        payload: {comment: "A great venue for cheese."}
       }
 
       # Test capital urns
@@ -95,9 +95,9 @@ describe Rifle do
 
       Rifle.settings.ignored_keys << :ignore_me
       Rifle.store("ref:4", {
-          ignore_me: 'Fish',
-          but_not_me: 'License',
-          created_at: '20th December 2012'
+        ignore_me: 'Fish',
+        but_not_me: 'License',
+        created_at: '20th December 2012'
       })
 
       Rifle.search("Fish", true).should == Set.new()
@@ -116,7 +116,7 @@ describe Rifle do
 
   end
 
-  context "fuzzy matching" do
+  context "without fuzzy matching" do
     before(:each) {
       Rifle.settings.fuzzy_matching = false
     }
@@ -168,9 +168,48 @@ describe Rifle do
       Rifle.search("stichelton", true).should == Set.new(["test:5"])
 
       Rifle.search("07987654567", true).should == Set.new(["test:6"])
+      Rifle.search("+(44)7987654567", true).should == Set.new(["test:6"])
+      Rifle.search("+44 7987654567", true).should == Set.new(["test:6"])
 
     end
 
   end
+
+  context 'ordering' do
+    before(:each) {
+      Rifle.settings.fuzzy_matching = false
+    }
+
+    it "returns results by updated at" do
+      Rifle.flush
+
+      # Add a load with update_at, and check results against a sorted version
+      expected = []
+      (10..90).to_a.shuffle.each_with_index { |n, i| # This produces a unique random list of numbers
+        result = {
+          'urn' => "test:#{i}",
+          'comment' => "Fetch the comfy chair",
+          'updated_at' => "20#{n+9}-01-04T1#{Random.rand(9)}:20:58Z"
+        }
+        expected << result
+        Rifle.store(result['urn'], result)
+      }
+      expected.sort! { |a, b| DateTime.parse(b['updated_at']) <=> DateTime.parse(a['updated_at']) }
+
+      res = Rifle.search("comfy", false).map { |r| r[:payload] }
+      (DateTime.parse(res[0]['updated_at']) <=> DateTime.parse(res[1]['updated_at'])).should == 1 # zeroth result should be more recent
+      res.should == expected # Predictable order
+    end
+  end
+
+  context 'processor' do
+    it 'should create lots of subwords for punctuation delimited strings, as well as the full string' do
+      str = "Lots like +44799999999 O'Connor with 123,456 punctuation urn:this:that every/type"
+      results = Rifle::Processor.new.get_words_array_from_text(str)
+      results.sort.should == ["0799999999", "123", "123456", "44799999999", "456", "799999999", "connor", "every", "everytype", "like", "lots", "oconnor", "punctuation", "that", "this", "type", "urn", "urnthisthat", "with"].sort
+
+    end
+  end
+
 
 end

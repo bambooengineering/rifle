@@ -20,8 +20,9 @@ module Rifle
     Processor.new.index_resource(urn, hash)
   end
 
-  def self.search(words, urns_only = false)
-    Processor.new.search_for(words, urns_only)
+  def self.search(words, options = {})
+    options = {urns_only: options} if !!options == options # Support old boolean only arg
+    Processor.new.search_for(words, options)
   end
 
   class Processor
@@ -56,29 +57,29 @@ module Rifle
       metaphones
     end
 
-    def search_for(sentence, urns_only)
-      p "Rifle searching for #{sentence}, urns only #{urns_only}"
+    def search_for(sentence, options)
+      p "Rifle searching for #{sentence}, options #{options}"
       words = get_words_array_from_text(sentence)
       metaphones = get_metaphones_from_word_set(Set.new(words))
 
       urns = nil
       metaphones.each do |metaphone|
         new_urns = get_urns_for_metaphone(metaphone)
-        p metaphone
         urns = urns.nil? ? Set.new(new_urns) : urns.intersection(new_urns)
       end
       urns ||= Set.new
 
       p "Rifle found #{urns.size} urns"
-      if urns_only
+      if options[:urns_only]
         urns
       else
-        urns.map { |u|
+        full_results = urns.map { |u|
           {
-              urn: u,
-              payload: get_payload_for_urn(u)
+            urn: u,
+            payload: get_payload_for_urn(u)
           }
         }
+        full_results = full_results.sort! { |a, b| DateTime.parse(b[:payload]['updated_at']) <=> DateTime.parse(a[:payload]['updated_at']) }
       end
     end
 
@@ -104,17 +105,25 @@ module Rifle
 
     def get_words_array_from_text(text)
       return [] if !text.is_a?(String)
-      text.downcase.split(/[^a-zA-Z0-9]/).select { |w| w.length >= Rifle.settings.min_word_length }
+      text = text.downcase
+
+      # First get the smallest parts, split by anything that isn't a letter or number
+      results = text.split(/[^a-zA-Z0-9]/)
+      # Now add the text blocks just with punctuation removed. eg O'Connor -> OConnor
+      by_spaces = text.split(' ')
+      results = results + by_spaces.map { |w| w.gsub(/[^a-zA-Z0-9]/, '') }
+      # Add extra search terms. EG, other phone number layouts
+      results = results + by_spaces.select { |w| w.start_with?('+44') }.map { |w|
+        # Here we have to strip all the front +44 and replace with 0. Also, store the one without a prefix.
+        ["0#{w[3..-1]}", w[3..-1]]
+      }
+      # Unique
+      results = results.flatten.uniq
+
+      results.select { |w| w.length >= Rifle.settings.min_word_length }
     end
 
     def get_metaphones_from_word_set(words)
-      # Add extra search terms. EG, other phone number layouts
-      words = Set.new(words.map { |w|
-        # Here we have to strip all the front +44 and replace with 0.
-        w = w.start_with?('+44') ? "0#{w[3..-1]}" : w
-        w = w.start_with?('+') ? w[1..-1] : w # Also strip + signs, as they are ignored by Resque in keys
-      })
-
       # Removed ignored words
       words.subtract Rifle.settings.ignored_words
       # Get the parts

@@ -30,8 +30,24 @@ urn and a payload
 
 # Payloads
 
-Payloads are expected to be hashes, identified by a company-wide unique id (a urn). These are indexed and can
-be searched by metaphone if fuzzy_matching is enabled. That is, the search term need not be exact.
+Payloads are expected to be hashes, identified by a company-wide unique id (a urn). These are indexed on store by exact words, and collapsed words if punctuation
+is in the middle of a word.
+
+E.g, given the following payload
+
+    O'Connor has telephone +(44)798765432?
+
+Any of the following search terms will match
+
+    O'Connor
+    Oconnor
+    +44798765432
+    +(44)798765432
+    0798765432     # <= Special case, UK phone prefixes are ignored
+
+# Fuzzy Matching
+
+Items can be searched by metaphone if fuzzy_matching is enabled. That is, the search term need not be exact.
 
 E.g, given the following payload
 
