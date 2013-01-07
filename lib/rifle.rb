@@ -28,7 +28,7 @@ module Rifle
   class Processor
 
     def index_resource(urn, hash)
-      p "Rifle indexing object with urn #{urn}"
+      ::Rails.logger.info "Rifle indexing object with urn #{urn}"
       # First get the old values
       old_payload = get_payload_for_urn(urn)
       if old_payload
@@ -58,7 +58,7 @@ module Rifle
     end
 
     def search_for(sentence, options)
-      p "Rifle searching for #{sentence}, options #{options}"
+      ::Rails.logger.info "Rifle searching for #{sentence}, options #{options}"
       words = get_words_array_from_text(sentence)
       metaphones = get_metaphones_from_word_set(Set.new(words))
 
@@ -69,7 +69,7 @@ module Rifle
       end
       urns ||= Set.new
 
-      p "Rifle found #{urns.size} urns"
+      ::Rails.logger.info "Rifle found #{urns.size} urns"
       if options[:urns_only]
         urns
       else
@@ -79,7 +79,7 @@ module Rifle
             payload: get_payload_for_urn(u)
           }
         }
-        full_results = full_results.sort! { |a, b| DateTime.parse(b[:payload]['updated_at']) <=> DateTime.parse(a[:payload]['updated_at']) }
+        full_results.sort! { |a, b| DateTime.parse(b[:payload]['updated_at']) <=> DateTime.parse(a[:payload]['updated_at']) }
       end
     end
 
