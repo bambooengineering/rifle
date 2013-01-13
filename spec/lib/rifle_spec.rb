@@ -217,7 +217,7 @@ describe Rifle do
     }
 
     it 'should use additional_search_terms' do
-      Rifle.store('test:10', ['red leicster', 'lancashire', 'stichelton'], 'tasty')
+      Rifle.store('test:10', ['red leicster', 'lancashire', 'stichelton'], 'Tasty') # Note, this additional search term has an uppercase
       Rifle.store('test:11', ['bourbon', 'whiskey'], ['spirits'])
       Rifle.search("leicster", true).should == Set.new(['test:10'])
       Rifle.search("tasty", true).should == Set.new(['test:10'])

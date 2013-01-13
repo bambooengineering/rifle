@@ -40,7 +40,7 @@ module Rifle
 
       # Now get the new ones
       words = traverse_object_for_word_set(hash)
-      words_and_search_terms = words + Array(additional_search_terms)
+      words_and_search_terms = words + Array(additional_search_terms).map {|w| w.downcase}
       metaphones = get_metaphones_from_word_set(words_and_search_terms)
 
       # Clear out words that have been removed (but leave ones that are still present in the new version)
