@@ -16,8 +16,8 @@ module Rifle
     p "Flushing all Rifle indices complete"
   end
 
-  def self.store(urn, hash)
-    Processor.new.index_resource(urn, hash)
+  def self.store(urn, hash, additional_search_terms = [])
+    Processor.new.index_resource(urn, hash, additional_search_terms)
   end
 
   def self.search(words, options = {})
@@ -27,8 +27,8 @@ module Rifle
 
   class Processor
 
-    def index_resource(urn, hash)
-      ::Rails.logger.info "Rifle indexing object with urn #{urn}"
+    def index_resource(urn, hash, additional_search_terms = [])
+      p "Rifle indexing object with urn #{urn}"
       # First get the old values
       old_payload = get_payload_for_urn(urn)
       if old_payload
@@ -40,7 +40,8 @@ module Rifle
 
       # Now get the new ones
       words = traverse_object_for_word_set(hash)
-      metaphones = get_metaphones_from_word_set(words)
+      words_and_search_terms = words + Array(additional_search_terms)
+      metaphones = get_metaphones_from_word_set(words_and_search_terms)
 
       # Clear out words that have been removed (but leave ones that are still present in the new version)
       (old_metaphones - metaphones).each do |metaphone|
@@ -58,7 +59,6 @@ module Rifle
     end
 
     def search_for(sentence, options)
-      ::Rails.logger.info "Rifle searching for #{sentence}, options #{options}"
       words = get_words_array_from_text(sentence)
       metaphones = get_metaphones_from_word_set(Set.new(words))
 
@@ -69,7 +69,7 @@ module Rifle
       end
       urns ||= Set.new
 
-      ::Rails.logger.info "Rifle found #{urns.size} urns"
+      p "Rifle searching for #{sentence}, options #{options}, found #{urns.size} urns"
       if options[:urns_only]
         urns
       else
