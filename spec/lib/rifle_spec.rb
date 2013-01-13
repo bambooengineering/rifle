@@ -222,6 +222,9 @@ describe Rifle do
       Rifle.search("leicster", true).should == Set.new(['test:10'])
       Rifle.search("tasty", true).should == Set.new(['test:10'])
       Rifle.search("spirits", true).should == Set.new(['test:11'])
+
+      # Check that the returned payload doesn't include the additional search terms
+      Rifle.search("bourbon").to_json.should_not include('spirits')
     end
   end
 
