@@ -217,7 +217,7 @@ describe Rifle do
     }
 
     it 'should use additional_search_terms' do
-      Rifle.store('test:10', ['red leicster', 'lancashire', 'stichelton'], 'Tasty') # Note, this additional search term has an uppercase
+      Rifle.store('test:10', ['red leicester', 'lancashire', 'stichelton'], 'Tasty') # Note, this additional search term has an uppercase
       Rifle.store('test:11', ['bourbon', 'whiskey'], ['spirits'])
       Rifle.search("leicester", true).should == Set.new(['test:10'])
       Rifle.search("tasty", true).should == Set.new(['test:10'])
@@ -225,6 +225,11 @@ describe Rifle do
 
       # Check that the returned payload doesn't include the additional search terms
       Rifle.search("bourbon").to_json.should_not include('spirits')
+    end
+
+    it 'handle nil additional_search_terms' do
+      Rifle.store('test:12', ['red', 'white'], ['wine', nil]) # Note, this additional search term is nil
+      Rifle.search("wine", true).should == Set.new(['test:12'])
     end
   end
 
