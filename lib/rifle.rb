@@ -79,7 +79,7 @@ module Rifle
             payload: get_payload_for_urn(u)
           }
         }
-        full_results.sort! { |a, b| DateTime.parse(b[:payload]['updated_at']) <=> DateTime.parse(a[:payload]['updated_at']) }
+        full_results.sort! { |a, b| DateTime.parse(b[:payload]['updated_at'] || '') <=> DateTime.parse(a[:payload]['updated_at'] || '') }
       end
     end
 
