@@ -185,19 +185,30 @@ describe Rifle do
 
       # Add a load with update_at, and check results against a sorted version
       expected = []
-      (10..90).to_a.shuffle.each_with_index { |n, i| # This produces a unique random list of numbers
+      (10..20).to_a.shuffle.each_with_index { |n, i| # This produces a unique random list of numbers
         result = {
           'urn' => "test:#{i}",
           'comment' => "Fetch the comfy chair",
-          'updated_at' => "20#{n+9}-01-04T1#{Random.rand(9)}:20:58Z"
+          'updated_at' => "20#{n+9}-01-04T11:20:58Z"
         }
         expected << result
         Rifle.store(result['urn'], result)
       }
-      expected.sort! { |a, b| DateTime.parse(b['updated_at']) <=> DateTime.parse(a['updated_at']) }
+
+      #### See if it can handle a nil updated_at
+      result = {
+        'urn' => "test:21",
+        'comment' => "Fetch the comfy chair",
+        'updated_at' => nil
+      }
+      expected << result
+      Rifle.store(result['urn'], result)
+
+      expected.sort! { |a, b| (b['updated_at'] || '') <=> (a['updated_at'] || '') }
 
       res = Rifle.search("comfy", false).map { |r| r[:payload] }
-      (DateTime.parse(res[0]['updated_at']) <=> DateTime.parse(res[1]['updated_at'])).should == 1 # zeroth result should be more recent
+
+      (DateTime.parse(res[1]['updated_at']) <=> DateTime.parse(res[2]['updated_at'])).should == 1 # zeroth result should be more recent
       res.should == expected # Predictable order
     end
   end
