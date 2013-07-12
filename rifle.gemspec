@@ -21,7 +21,10 @@ Gem::Specification.new do |s|
   s.add_dependency 'text'
   s.add_dependency 'resque'
   s.add_dependency 'rest-client'
-  s.add_dependency 'session_off'
   s.add_dependency 'fitter-happier'
   s.add_dependency 'lograge'
+  # 0.5.0 breaks with Devise. Visiting '/' (expecting to get bumped to /users/sign_in) results in:
+  # undefined local variable or method `session' for #<Devise::FailureApp:0x00000007e54500>
+  # devise (2.2.4) lib/devise/failure_app.rb:176:in `store_location!'
+  s.add_dependency 'session_off', '0.4'
 end
