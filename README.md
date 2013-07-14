@@ -91,4 +91,6 @@ To use the standalone server, the clients must have the following in their initi
 
     Rifle.settings.use_rest_server = 'http://<standalone.ip>:3000'
 
+## License
 
+MIT License.
