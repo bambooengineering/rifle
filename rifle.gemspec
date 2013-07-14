@@ -11,6 +11,7 @@ Gem::Specification.new do |s|
   s.email = ['harry@harrylascelles.com']
   s.homepage = 'https://github.com/firstbanco/rifle'
   s.summary = 'Redis search server'
+  s.license = 'MIT'
 
   s.files = Dir["{app,lib}/**/*"] + ["README.md"]
   s.require_paths = ['lib']
